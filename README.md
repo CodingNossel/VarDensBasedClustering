@@ -1,1 +1,1 @@
-# VarDensBasedClustering
+# Variable Density Based Clustering
