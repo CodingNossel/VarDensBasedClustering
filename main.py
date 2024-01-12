@@ -16,12 +16,7 @@ X, labels_true = make_blobs(
 hdb = HDBSCAN(store_centers='both')
 hdb.fit(X)
 
-data = []
-index = 0
-
-for value in X:
-    data.append(dict(index=index, label=hdb.labels_[index], coord=value))
-    index = index + 1
+data = [dict(index=index, label=hdb.labels_[index], coord=value) for index, value in enumerate(X)]
 
 data.sort(key=lambda x: x['label'])
 
