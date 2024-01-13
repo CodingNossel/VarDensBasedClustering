@@ -1,8 +1,10 @@
+from typing import Any
+
+import numpy as np
 from scipy.cluster import hierarchy
 import matplotlib.pyplot as plt
 from sklearn.cluster import HDBSCAN
 from sklearn.datasets import make_blobs
-
 
 # TODO: add way to load different datasets
 centers = [[1, 1], [-1, -1], [1, -1]]
@@ -13,6 +15,10 @@ X, labels_true = make_blobs(
 # run HDBSCAN on Data. Possible to change parameters here
 hdb = HDBSCAN(store_centers='both')
 hdb.fit(X)
+
+data = [dict(index=index, label=hdb.labels_[index], coord=value) for index, value in enumerate(X)]
+
+data.sort(key=lambda x: x['label'])
 
 # Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
 z = hierarchy.linkage(hdb.centroids_, method='single')
