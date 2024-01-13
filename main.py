@@ -23,6 +23,20 @@ data.sort(key=lambda x: x['label'])
 # Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
 z = hierarchy.linkage(hdb.centroids_, method='single')
 
+#linkage to IDFKIKMS
+# get height of parent and child cluster
+#TODO: figure out how to get points for cluster (z[i][0] and z[i][1])
+cutlist = []
+for i in range(len(z) - 1):
+    height = z[i][2]
+    heightChild = z[i+1][2]
+    heightDiff = height - heightChild
+    
+    cutlist.append((heightDiff, [],  height))
+
+
+print(cutlist)
+
 hierarchyTreeCentroids = hierarchy.to_tree(z)
 
 # Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
