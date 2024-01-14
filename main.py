@@ -1,5 +1,3 @@
-from typing import Any
-
 import numpy as np
 import copy
 from scipy.cluster import hierarchy
@@ -53,11 +51,6 @@ for i in range(len(z) - 1):
     cutlist.append((heightDiff, height))
 
 
-# quantile = 0.95
-# [0, 0, 1, 505, 10]
-# [505, 10, 1, 0, 0]
-# print(cutlist)
-# quantile must be up 1.0
 def get_biggest_density_change(cutlist, quantile):
     cutlist.sort(key=lambda tup: tup[0])
     # cut from the point where quantile is reached
@@ -68,32 +61,6 @@ def get_biggest_density_change(cutlist, quantile):
 list2 = get_biggest_density_change(cutlist, 0.55)
 result = copy.deepcopy(newData)
 
-# debug why label assigment is wrong
-
-# for element in result:
-#     changeTo = 0
-#     comp = 0
-#     changeOnlyMe = 0
-#     val = 0
-#     for i in range(len(list2)):
-#         changeTo = z[i][1]
-#         changeOnlyMe = z[i][0]
-#         val = list2[i][1]
-#         print('changeTo: ', changeTo, ' changeOnlyMe: ', changeOnlyMe)
-#         for j in range(len(z)):
-#             comp = z[j][2]
-#             print('compare: ', comp)
-#             for k in range(len(z)):
-#                 if z[k][0] == changeOnlyMe:
-#                     if val == comp:
-#                         cluster = z[k][0]
-#                         print('changed from: ', element['label'], '->', 'to: ', cluster, )
-#                         element['label'] = cluster
-
-changeTo = 0
-changeOnlyMe = 0
-valIdentifier = 0
-compareTo = 0
 tmp = []
 
 for i in range(len(list2)):
@@ -138,20 +105,6 @@ sorted(list2, key=lambda tup: tup[1])
 # outPutlist = []
 # for element in result:
 #     plt.scatter(element['coord'][0], element['coord'][1], c=element['label'])
-# count = 0
-# for a in result:
-#      print(a['label'], "coord:",  a['coord'], "index:", a['index'], "count:", count)
-#      count += 1
-#      if (count == 10):
-#           break
-
-# print("------------------")
-# count = 0
-# for i in data:
-#      print(i['label'], "coord:",  i['coord'], " index:", i['index'], "count:", count)
-#      count += 1
-#      if (count == 10):
-#           break
 
 for i in range(len(data)):
     print('data: ', data[i], 'compare_result: ', data[i]['label'] == result[i]['label'])
