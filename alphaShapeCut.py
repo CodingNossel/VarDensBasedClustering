@@ -1,43 +1,47 @@
+import copy
 import numpy as np
-from scipy.spatial import Delaunay, ConvexHull
+from scipy.spatial import Delaunay, ConvexHull 
+from shapely.geometry import Polygon
+import alphashape
 
-#input DBSCAN Dendogram G
-def alpha_shape_cut(G, quantile):
+
+#input: linkage matrix z after HDBScan, data, quantile
+def alpha_shape_cut(z, data, quantile):
     cutlist = []
-    labels = []
-
-    for (u, v) in G.edges():
-        area_before = ConvexHull(G.nodes(u).points)
-        area_after = ConvexHull(G.nodes(v).points)
-        density_change = area_after - area_before
-
-        cutlist.append((density_change, G.nodes(u).points, G.nodes(u).height))
-
-
-    cutlist = get_biggest_density_change(cutlist, quantile)
-
-#TODO wait for DBSCAN implementation
-    for p in points:
-        #set labels[p] to the index of the first cutlist elemnt it is part of
-        for i in range(len(cutlist)):
-            if p in cutlist[i][1]:
-                labels[p] = i
-                break
-        else:
-            labels[p] = -1
-
-
-#TODO find out proper way to calculate density change
+    for i in range(len(z) - 1):
+        uPoints = [element for element in data if element['label'] == list[i][0] for i in range(len(list))]
+        vPoints = [element for element in data if element['label'] == list[i + 1][0] for i in range(len(list))]
+        alphaU = alphashape.alphashape(uPoints, quantile)
+        alphaV = alphashape.alphashape(vPoints, quantile)
+        areaU = concave_polygon_area(alphaU)
+        areaV = concave_polygon_area(alphaV)
+        areaDiff = areaU - areaV
+        #TODO GET POINTS OF U
+        #uPoints = [data.map(lambda x: x['label']).filter(lambda x: x == z[i][0] or x == z[i][1])]
+        uPoints = []
+    
+        cutlist.append((areaDiff, uPoints,  areaU))
+    list = get_biggest_density_change(cutlist, 0.55)
+    result = copy.deepcopy(data)
+    for i in range(len(list)):
+        for element in data:
+            if (element['label'] == list[i][0]):
+                result['label'] = list[i][1]
+    return result
+#quantile = 0.95
+#[0, 0, 1, 505, 10]
+#[505, 10, 1, 0, 0]
+# quantile must be up 1.0
 def get_biggest_density_change(cutlist, quantile):
     cutlist.sort(key=lambda tup: tup[0])
-    cutlist = cutlist[int(len(cutlist) * quantile):]
+    #cut from the point where quantile is reached
+    cutlist = cutlist[:int(len(cutlist) * quantile)]
     return cutlist
 
-
-
-
-
-
-
-
-# to calculate area of a set of points -> convex hull of outer border of the Delaunay triangulation
+def concave_polygon_area(coords):
+    polygon = Polygon(coords)
+    if polygon.is_convex:
+        return polygon.area
+    else:
+        convex_parts = list(polygon.convex_hull)
+        return sum(Polygon(part).area for part in convex_parts)
