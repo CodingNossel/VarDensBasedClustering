@@ -1,6 +1,7 @@
 from typing import Any
 
 import numpy as np
+import copy
 from scipy.cluster import hierarchy
 import matplotlib.pyplot as plt
 from sklearn.cluster import HDBSCAN
@@ -8,20 +9,22 @@ from sklearn.datasets import make_blobs
 from sklearn import datasets
 # TODO: add way to load different datasets
 centers = [[1, 1], [-1, -1], [1, -1], [20, 20], [20, 21], [21, 20], [21, 21]]
-supa = datasets.load_iris()
-print(len(supa.data))
-print(len(supa['target']))
-X, labels_true = make_blobs(
-    n_samples=750, centers=centers, cluster_std=0.4, random_state=0
+# X, labels_true = make_blobs(
+#     n_samples=750, centers=centers, cluster_std=0.4, random_state=0
+# )
+X, labels_true = datasets.load_digits(
+    return_X_y=True
 )
-
 # run HDBSCAN on Data. Possible to change parameters here
-hdb = HDBSCAN(store_centers='both')
-hdb.fit(supa.data)
+#hdb = HDBSCAN(store_centers='both')
+hdb = HDBSCAN(store_centers='both', min_cluster_size=10, min_samples=1)
+hdb.fit(X)
 
 data = [dict(index=index, label=hdb.labels_[index], coord=value) for index, value in enumerate(X)]
 
 data.sort(key=lambda x: x['label'])
+
+newData = copy.deepcopy(data)
 
 # Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
 z = hierarchy.linkage(hdb.centroids_, method='single')
@@ -36,23 +39,31 @@ for i in range(len(z) - 1):
     heightChild = z[i+1][2]
     heightDiff = height - heightChild
     #TODO GET POINTS OF U
+    #uPoints = [data.map(lambda x: x['label']).filter(lambda x: x == z[i][0] or x == z[i][1])]
     uPoints = []
     
     cutlist.append((heightDiff, uPoints,  height))
 #quantile = 0.95
 #[0, 0, 1, 505, 10]
+#[505, 10, 1, 0, 0]
 print(cutlist)
 # quantile must be up 1.0
 def get_biggest_density_change(cutlist, quantile):
     cutlist.sort(key=lambda tup: tup[0])
-    cutlist = cutlist[int(len(cutlist) * quantile):]
+    #cut from the point where quantile is reached
+    cutlist = cutlist[:int(len(cutlist) * quantile)]
     return cutlist
-list = get_biggest_density_change(cutlist, 0.95)
+list = get_biggest_density_change(cutlist, 0.55)
+result = copy.deepcopy(newData)
 for i in range(len(list)):
-    #TODO: set label to the first I dunno pls help
-    #FIX PIPELINE
-    print(list[i][0])
+        points = []
+        for element in newData:
+            if (element['label'] == list[i][0]):
+                result['label'] = list[i][1]
 
+sorted(list, key=lambda tup: tup[2])
+for i in range(len(list)):
+    print(list[i][2])
 hierarchyTreeCentroids = hierarchy.to_tree(z)
 
 # Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
@@ -71,5 +82,9 @@ hierarchyTreeCentroids = hierarchy.to_tree(z)
 # TODO: implement Alpha Shape Cut
 
 # Dendrogram for Christian DO NOT USE OTHERWISE
-dendrogram = hierarchy.dendrogram(z)
+outPutlist = []
+for element in result:
+    outPutlist.append(element['coord'])
+#dendrogram = hierarchy.dendrogram(z)
+plt.plot(outPutlist)
 plt.show()
