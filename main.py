@@ -70,17 +70,51 @@ result = copy.deepcopy(newData)
 
 # debug why label assigment is wrong
 
-for element in result:
-    for i in range(len(list2)):
-        val = list2[i][1]
-        print('value: ', val)
-        for j in range(len(z)):
-            comp = z[j][2]
-            print('compare: ', comp)
-            if val == comp:
-                cluster = z[j][0]
-                print('changed from: ', element['label'], '->', 'to: ', cluster, )
-                element['label'] = cluster
+# for element in result:
+#     changeTo = 0
+#     comp = 0
+#     changeOnlyMe = 0
+#     val = 0
+#     for i in range(len(list2)):
+#         changeTo = z[i][1]
+#         changeOnlyMe = z[i][0]
+#         val = list2[i][1]
+#         print('changeTo: ', changeTo, ' changeOnlyMe: ', changeOnlyMe)
+#         for j in range(len(z)):
+#             comp = z[j][2]
+#             print('compare: ', comp)
+#             for k in range(len(z)):
+#                 if z[k][0] == changeOnlyMe:
+#                     if val == comp:
+#                         cluster = z[k][0]
+#                         print('changed from: ', element['label'], '->', 'to: ', cluster, )
+#                         element['label'] = cluster
+
+changeTo = 0
+changeOnlyMe = 0
+valIdentifier = 0
+compareTo = 0
+tmp = []
+
+for i in range(len(list2)):
+    valIdentifier = list2[i][1]
+
+    for j in range(len(z)):
+        compareTo = z[j][2]
+
+        if valIdentifier == compareTo:
+            changeTo = z[j][0]
+            changeOnlyMe = z[j][1]
+            tmp.append((changeOnlyMe, changeTo))
+            print('changeTo: ', changeTo, 'changeOnlyMe: ', changeOnlyMe, 'valIdentifier: ', valIdentifier,
+                  'compareTo: ', compareTo)
+            break
+
+for k in range(len(tmp)):
+    for element in result:
+        if element['label'] == tmp[k][0]:
+            element['label'] = tmp[k][1]
+            print('change from: ', tmp[k][0], '->', 'changed to: ', tmp[k][1], 'point: ', element['coord'])
 
 sorted(list2, key=lambda tup: tup[1])
 # hierarchyTreeCentroids = hierarchy.to_tree(z)
@@ -119,8 +153,8 @@ sorted(list2, key=lambda tup: tup[1])
 #      if (count == 10):
 #           break
 
-# for i in range(len(data)):
-# print('data: ', data[i],'compare_result: ',  data[i]['label'] == result[i]['label'])
+for i in range(len(data)):
+    print('data: ', data[i], 'compare_result: ', data[i]['label'] == result[i]['label'])
 
 # plt.scatter([newList['coord'][:] for newList in result], y=[newList['coord'][:] for newList in result], c=[newList['label'] for newList in result])
 # dendrogram = hierarchy.dendrogram(z)
