@@ -64,7 +64,7 @@ for i in range(len(list)):
 sorted(list, key=lambda tup: tup[2])
 for i in range(len(list)):
     print(list[i][2])
-hierarchyTreeCentroids = hierarchy.to_tree(z)
+#hierarchyTreeCentroids = hierarchy.to_tree(z)
 
 # Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
 #h = hierarchy.linkage(hdb.medoids_, method='single')
@@ -82,9 +82,13 @@ hierarchyTreeCentroids = hierarchy.to_tree(z)
 # TODO: implement Alpha Shape Cut
 
 # Dendrogram for Christian DO NOT USE OTHERWISE
-outPutlist = []
-for element in result:
-    outPutlist.append(element['coord'])
+# outPutlist = []
+# for element in result:
+#     plt.scatter(element['coord'][0], element['coord'][1], c=element['label'])
+
+for a in result:
+     print(a['coord'])
+
+plt.scatter([newList['coord'][:] for newList in result], y=[newList['coord'][:] for newList in result], c=[newList['label'] for newList in result])
 #dendrogram = hierarchy.dendrogram(z)
-plt.plot(outPutlist)
 plt.show()
