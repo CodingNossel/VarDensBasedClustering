@@ -72,7 +72,7 @@ def get_biggest_density_change(cut : list, quantile : float = 0.55) -> list:
 
 def compare_changes(shortend_cut : list, linkage, debug_mode = False):
     '''
-    
+    takes the cutlist after the density changes and performs them on the linkage list forming clusters
     
     returns changes
     '''
@@ -96,7 +96,7 @@ def compare_changes(shortend_cut : list, linkage, debug_mode = False):
 
 def change_label(changes_in_data : list, result : list, debug_mode = False):
     '''
-    the changes in 
+    changes the label of the data and saves them in a new list
     '''
     for k in range(len(changes_in_data)):
         for element in result:
@@ -108,7 +108,7 @@ def change_label(changes_in_data : list, result : list, debug_mode = False):
 
 def plotting(data_values : list, data_labels : list) -> None:
     '''
-    
+    plots the data
     '''
     if np.shape(data_values)[1] >= 2:
         pca = PCA(n_components=2)
