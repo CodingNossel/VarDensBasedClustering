@@ -7,8 +7,17 @@ from sklearn.datasets import make_blobs
 from sklearn import datasets
 from sklearn.decomposition import PCA
 
-def loading_datasets(file : str):
+'''
+This file performs the Edge Quantile Cut - HDBScan on a dataset of choice.
+'''
 
+
+def loading_datasets(file : str) -> np.ndarray:
+    '''
+    loads a dataset from file given in string
+    
+    returns the dataset as a list
+    '''
     with open(file, 'r') as f:
         lines = f.readlines()
 
@@ -18,7 +27,12 @@ def loading_datasets(file : str):
     return data_list
 
 
-def do_hdbscan(default_data : list):
+def do_hdbscan(default_data):
+    '''
+    performs hdbscan on a given list
+    
+    returns the data and linkage matrix 
+    '''
     hdb = HDBSCAN(store_centers='both', min_cluster_size=10, min_samples=1)
     hdb.fit(default_data)
 
@@ -31,6 +45,11 @@ def do_hdbscan(default_data : list):
 
 
 def get_cutlist(linkage) -> list:
+    '''
+    calculates the hight differences between elements of the linkage list
+    
+    returns the cutlist
+    '''
 
     cut = []
 
@@ -40,11 +59,18 @@ def get_cutlist(linkage) -> list:
         height_diff = height - height_child
         cut.append((height_diff, height))
 
-
     return cut
 
 
 def get_biggest_density_change(cut : list, quantile : float = 0.55) -> list:
+    '''
+    sorts the cutlist based on height
+    
+    finds the biggest density change in the cutlist based on quantile, default = 0.55,
+    and cuts the points after 
+    
+    returns the cutlist
+    '''
 
     cut.sort(key=lambda tup: tup[0])
     # cut from the point where quantile is reached
@@ -53,7 +79,12 @@ def get_biggest_density_change(cut : list, quantile : float = 0.55) -> list:
     return cut
 
 
-def compare_changes(shortend_cut : list, linkage, debug_mode = False):
+def compare_changes(shortend_cut : list, linkage, debug_mode : bool = False) -> list:
+    '''
+    takes the cutlist after the density changes and performs them on the linkage list forming clusters
+    
+    returns changes
+    '''
     changes = []
     for i in range(len(shortend_cut)):
         val_identifier = shortend_cut[i][1]
@@ -72,7 +103,10 @@ def compare_changes(shortend_cut : list, linkage, debug_mode = False):
     return changes
 
 
-def change_label(changes_in_data : list, result : list, debug_mode = False):
+def change_label(changes_in_data : list, result : list, debug_mode : bool = False) -> None:
+    '''
+    changes the label of the data and saves them in a new list
+    '''
     for k in range(len(changes_in_data)):
         for element in result:
             if element['label'] == changes_in_data[k][0]:
@@ -82,7 +116,9 @@ def change_label(changes_in_data : list, result : list, debug_mode = False):
 
 
 def plotting(data_values : list, data_labels : list) -> None:
-    
+    '''
+    plots the data
+    '''
     if np.shape(data_values)[1] >= 2:
         pca = PCA(n_components=2)
         projected = pca.fit_transform(data_values)
@@ -93,78 +129,35 @@ def plotting(data_values : list, data_labels : list) -> None:
         plt.title('2D Projection of Dataset using PCA')
         plt.show()
 
-
-# TODO: add way to load different datasets
+''' 
+-------------------------------------------------------------------
+ From here on forward we load data sets and visualize our results.
+-------------------------------------------------------------------
+'''
+#blobies
+"""
 centers = [[1, 1], [-1, -1], [1, -1], [20, 20], [20, 21], [21, 20], [21, 21]]
 # blobies
 # X, labels_true = make_blobs(
 #     n_samples=750, centers=centers, cluster_std=0.4, random_state=0
 # )
+"""
+"""
 # digits
 X, labels_true = datasets.load_digits(
     return_X_y=True
 )
+"""
 # iris
+"""
 # X, labels_true = datasets.load_iris(
 #     return_X_y=True
 # )
+"""
 
-data, z_linkage = do_hdbscan(X)
-dp_data = copy.deepcopy(data)
-shortend_cutlist = get_biggest_density_change(get_cutlist(z_linkage), 0.55) #compramised_cutlist
-result = copy.deepcopy(dp_data)
-
-changes = compare_changes(shortend_cutlist, z_linkage, True)
-change_label(changes, result, True)
-sorted(shortend_cutlist, key=lambda tup: tup[1])
-
-# hierarchyTreeCentroids = hierarchy.to_tree(z)
-
-# Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
-# h = hierarchy.linkage(hdb.medoids_, method='single')
-
-# hierarchyTreeMedoids = hierarchy.to_tree(h)
-
-# TODO: use whichever fits get for getting the coordinates
-# https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html#module-scipy.cluster.hierarchy
-# https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.to_tree.html#scipy.cluster.hierarchy.to_tree
-# https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.cut_tree.html#scipy.cluster.hierarchy.cut_tree
-# this exists as well, maybe it will held
-
-# TODO: implement Edge Quantile Cut
-
-# TODO: implement Alpha Shape Cut
-
-
-for i in range(len(data)):
-    print('data: ', data[i], 'compare_result: ', data[i]['label'] == result[i]['label'])
-
-
-data_labels = [result[i]['label'] for i in range(len(result))]
-data_values = [result[i]['coord'] for i in range(len(result))]
-
-default_labels = [data[i]['label'] for i in range(len(data))]
-default_values = [data[i]['coord'] for i in range(len(data))]
-
-print(np.shape(data_values), np.shape(data_labels))
-print(data_values)
-#plotting(default_values, default_labels)
-#plotting(data_values, data_labels)
-
-# Dendrogram for Christian DO NOT USE OTHERWISE
-#dendrogram = hierarchy.dendrogram(z_linkage)
-#plt.show()
-
-data = loading_datasets('R15.txt')
+data = loading_extern_datasets('R15.txt')
 data_values = [data[i][0:2] for i in range(len(data))]
 data_labels = [data[i][2] for i in range(len(data))]
-print()
-print(type(X), np.shape(X))
-
-print(type(data), np.shape(data))
-print(np.shape(data_values), np.shape(data_labels))
-#print(data)
-print(data_values)
 
 X, z_linkage = do_hdbscan(data)
 dp_data = copy.deepcopy(X)
@@ -175,10 +168,14 @@ changes = compare_changes(shortend_cutlist, z_linkage, True)
 change_label(changes, result, True)
 sorted(shortend_cutlist, key=lambda tup: tup[1])
 
-
-
 plotting(data_values, data_labels)
 
+#BRO IDK WHY IT DOESNT HAVE THE SAME PLOT AS THE ONE ABOVE
 data_labels = [result[i]['label'] for i in range(len(result))]
 data_values = [result[i]['coord'] for i in range(len(result))]
 plotting(data_values, data_labels)
+
+
+# Dendrogram for Christian DO NOT USE OTHERWISE
+dendrogram = hierarchy.dendrogram(z_linkage)
+plt.show()
