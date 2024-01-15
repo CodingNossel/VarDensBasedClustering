@@ -12,7 +12,7 @@ This file performs the Edge Quantile Cut - HDBScan on a dataset of choice.
 '''
 
 
-def loading_datasets(file : str) -> np.ndarray:
+def loading_extern_datasets(file : str) -> np.ndarray:
     '''
     loads a dataset from file given in string
     
@@ -120,8 +120,8 @@ def plotting(data_values : list, data_labels : list) -> None:
     plots the data
     '''
     if np.shape(data_values)[1] >= 2:
-        pca = PCA(n_components=2)
-        projected = pca.fit_transform(data_values)
+        projected = np.array(data_values)
+
         plt.scatter(projected[:, 0], projected[:, 1], c=data_labels, edgecolor='none', alpha=0.8, cmap=plt.cm.get_cmap('nipy_spectral', 10))
         plt.xlabel('X Coords')
         plt.ylabel('Y Coords')
@@ -173,6 +173,7 @@ plotting(data_values, data_labels)
 #BRO IDK WHY IT DOESNT HAVE THE SAME PLOT AS THE ONE ABOVE
 data_labels = [result[i]['label'] for i in range(len(result))]
 data_values = [result[i]['coord'] for i in range(len(result))]
+
 plotting(data_values, data_labels)
 
 
