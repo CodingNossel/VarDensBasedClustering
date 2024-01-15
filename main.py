@@ -7,6 +7,17 @@ from sklearn.datasets import make_blobs
 from sklearn import datasets
 from sklearn.decomposition import PCA
 
+def loading_datasets(file : str):
+
+    with open(file, 'r') as f:
+        lines = f.readlines()
+
+    coords_list = [list(map(float, line.split())) for line in lines]
+    data_list = np.array(coords_list)
+
+    return data_list
+
+
 def do_hdbscan(default_data : list):
     hdb = HDBSCAN(store_centers='both', min_cluster_size=10, min_samples=1)
     hdb.fit(default_data)
@@ -71,17 +82,16 @@ def change_label(changes_in_data : list, result : list, debug_mode = False):
 
 
 def plotting(data_values : list, data_labels : list) -> None:
-    if np.shape(data_values)[1] > 2:
+    
+    if np.shape(data_values)[1] >= 2:
         pca = PCA(n_components=2)
         projected = pca.fit_transform(data_values)
-    else:
-        projected = data_values
-    plt.scatter(projected[:, 0], projected[:, 1], c=data_labels, edgecolor='none', alpha=0.8, cmap=plt.cm.get_cmap('nipy_spectral', 10))
-    plt.xlabel('X Coords')
-    plt.ylabel('Y Coords')
-    plt.colorbar()
-    plt.title('2D Projection of Dataset using PCA')
-    plt.show()
+        plt.scatter(projected[:, 0], projected[:, 1], c=data_labels, edgecolor='none', alpha=0.8, cmap=plt.cm.get_cmap('nipy_spectral', 10))
+        plt.xlabel('X Coords')
+        plt.ylabel('Y Coords')
+        plt.colorbar()
+        plt.title('2D Projection of Dataset using PCA')
+        plt.show()
 
 
 # TODO: add way to load different datasets
@@ -136,9 +146,39 @@ data_values = [result[i]['coord'] for i in range(len(result))]
 default_labels = [data[i]['label'] for i in range(len(data))]
 default_values = [data[i]['coord'] for i in range(len(data))]
 
-plotting(default_values, default_labels)
-plotting(data_values, data_labels)
+print(np.shape(data_values), np.shape(data_labels))
+print(data_values)
+#plotting(default_values, default_labels)
+#plotting(data_values, data_labels)
 
 # Dendrogram for Christian DO NOT USE OTHERWISE
-dendrogram = hierarchy.dendrogram(z_linkage)
-plt.show()
+#dendrogram = hierarchy.dendrogram(z_linkage)
+#plt.show()
+
+data = loading_datasets('R15.txt')
+data_values = [data[i][0:2] for i in range(len(data))]
+data_labels = [data[i][2] for i in range(len(data))]
+print()
+print(type(X), np.shape(X))
+
+print(type(data), np.shape(data))
+print(np.shape(data_values), np.shape(data_labels))
+#print(data)
+print(data_values)
+
+X, z_linkage = do_hdbscan(data)
+dp_data = copy.deepcopy(X)
+shortend_cutlist = get_biggest_density_change(get_cutlist(z_linkage), 0.55) #compramised_cutlist
+result = copy.deepcopy(dp_data)
+
+changes = compare_changes(shortend_cutlist, z_linkage, True)
+change_label(changes, result, True)
+sorted(shortend_cutlist, key=lambda tup: tup[1])
+
+
+
+plotting(data_values, data_labels)
+
+data_labels = [result[i]['label'] for i in range(len(result))]
+data_values = [result[i]['coord'] for i in range(len(result))]
+plotting(data_values, data_labels)
