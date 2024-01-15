@@ -7,8 +7,17 @@ from sklearn.datasets import make_blobs
 from sklearn import datasets
 from sklearn.decomposition import PCA
 
-def loading_datasets(file : str):
+'''
+This file performs the Edge Quantile Cut - HDBScan on a dataset of choice.
+'''
 
+
+def loading_datasets(file : str):
+    '''
+    loads a dataset from file given in string
+    
+    returns the dataset as a list
+    '''
     with open(file, 'r') as f:
         lines = f.readlines()
 
