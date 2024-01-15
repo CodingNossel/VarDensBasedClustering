@@ -24,6 +24,7 @@ def loading_datasets(file : str):
     coords_list = [list(map(float, line.split())) for line in lines]
     data_list = np.array(coords_list)
 
+
     return data_list
 
 
@@ -40,6 +41,7 @@ def do_hdbscan(default_data : list):
 
     data.sort(key=lambda x: x['label'])
     linkage = hierarchy.linkage(hdb.centroids_, method='single')
+
 
     return data, linkage
 
@@ -76,6 +78,7 @@ def get_biggest_density_change(cut : list, quantile : float = 0.55) -> list:
     # cut from the point where quantile is reached
     cut = cut[:int(len(cut) * quantile)]
 
+
     return cut
 
 
@@ -100,6 +103,8 @@ def compare_changes(shortend_cut : list, linkage, debug_mode = False):
                     print('changeTo: ', change_to, 'changeOnlyMe: ', change_only_me, 'valIdentifier: ', val_identifier,
                           'compareTo: ', compare_to)
                 break
+
+
     return changes
 
 
@@ -135,20 +140,26 @@ def plotting(data_values : list, data_labels : list) -> None:
 -------------------------------------------------------------------
 
 
-# TODO: add way to load different datasets
+#blobies
+"""
 centers = [[1, 1], [-1, -1], [1, -1], [20, 20], [20, 21], [21, 20], [21, 21]]
-# blobies
-# X, labels_true = make_blobs(
-#     n_samples=750, centers=centers, cluster_std=0.4, random_state=0
-# )
+X, labels_true = make_blobs(
+     n_samples=750, centers=centers, cluster_std=0.4, random_state=0
+)
+"""
 # digits
+"""
 X, labels_true = datasets.load_digits(
     return_X_y=True
 )
+"""
+
 # iris
-# X, labels_true = datasets.load_iris(
-#     return_X_y=True
-# )
+"""
+X, labels_true = datasets.load_iris(
+    return_X_y=True
+)
+"""
 
 data, z_linkage = do_hdbscan(X)
 dp_data = copy.deepcopy(data)
@@ -182,27 +193,20 @@ print(data_values)
 data = loading_datasets('R15.txt')
 data_values = [data[i][0:2] for i in range(len(data))]
 data_labels = [data[i][2] for i in range(len(data))]
-print()
-print(type(X), np.shape(X))
 
-print(type(data), np.shape(data))
-print(np.shape(data_values), np.shape(data_labels))
-#print(data)
-print(data_values)
 
 X, z_linkage = do_hdbscan(data)
 dp_data = copy.deepcopy(X)
-shortend_cutlist = get_biggest_density_change(get_cutlist(z_linkage), 0.55) #compramised_cutlist
+shortend_cutlist = get_biggest_density_change(get_cutlist(z_linkage), 0.95) #compramised_cutlist
 result = copy.deepcopy(dp_data)
 
 changes = compare_changes(shortend_cutlist, z_linkage, True)
-change_label(changes, result, True)
+change_label(changes, result)
 sorted(shortend_cutlist, key=lambda tup: tup[1])
-
-
 
 plotting(data_values, data_labels)
 
+#BRO IDK WHY IT DOESNT HAVE THE SAME PLOT AS THE ONE ABOVE
 data_labels = [result[i]['label'] for i in range(len(result))]
 data_values = [result[i]['coord'] for i in range(len(result))]
 plotting(data_values, data_labels)
