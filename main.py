@@ -8,6 +8,11 @@ from sklearn import datasets
 from sklearn.decomposition import PCA
 
 def do_hdbscan(default_data : list):
+    '''
+    performs hdbscan on a given list
+    
+    returns the data and linkage matrix 
+    '''
     hdb = HDBSCAN(store_centers='both', min_cluster_size=10, min_samples=1)
     hdb.fit(default_data)
 
@@ -20,6 +25,9 @@ def do_hdbscan(default_data : list):
 
 
 def get_cutlist(linkage) -> list:
+    '''
+    
+    '''
 
     cut = []
 
