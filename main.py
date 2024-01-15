@@ -142,12 +142,12 @@ centers = [[1, 1], [-1, -1], [1, -1], [20, 20], [20, 21], [21, 20], [21, 21]]
 #     n_samples=750, centers=centers, cluster_std=0.4, random_state=0
 # )
 """
-"""
+
 # digits
-X, labels_true = datasets.load_digits(
+data, labels_true = datasets.load_digits(
     return_X_y=True
 )
-"""
+
 # iris
 """
 # X, labels_true = datasets.load_iris(
@@ -155,7 +155,7 @@ X, labels_true = datasets.load_digits(
 # )
 """
 
-data = loading_extern_datasets('R15.txt')
+#data = loading_extern_datasets('R15.txt')
 data_values = [data[i][0:2] for i in range(len(data))]
 data_labels = [data[i][2] for i in range(len(data))]
 
