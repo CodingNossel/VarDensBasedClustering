@@ -5,6 +5,84 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import HDBSCAN
 from sklearn.datasets import make_blobs
 from sklearn import datasets
+from sklearn.decomposition import PCA
+
+def do_hdbscan(default_data : list):
+    hdb = HDBSCAN(store_centers='both', min_cluster_size=10, min_samples=1)
+    hdb.fit(default_data)
+
+    data = [dict(index=index, label=hdb.labels_[index], coord=value) for index, value in enumerate(default_data)]
+
+    data.sort(key=lambda x: x['label'])
+    linkage = hierarchy.linkage(hdb.centroids_, method='single')
+
+    return data, linkage
+
+
+def get_cutlist(linkage) -> list:
+
+    cut = []
+
+    for i in range(len(linkage) - 1):
+        height = linkage[i][2]
+        height_child = linkage[i + 1][2]
+        height_diff = height - height_child
+        cut.append((height_diff, height))
+
+
+    return cut
+
+
+def get_biggest_density_change(cut : list, quantile : float = 0.55) -> list:
+
+    cut.sort(key=lambda tup: tup[0])
+    # cut from the point where quantile is reached
+    cut = cut[:int(len(cut) * quantile)]
+
+    return cut
+
+
+def compare_changes(shortend_cut : list, linkage, debug_mode = False):
+    changes = []
+    for i in range(len(shortend_cut)):
+        val_identifier = shortend_cut[i][1]
+
+        for j in range(len(linkage)):
+            compare_to = linkage[j][2]
+
+            if val_identifier == compare_to:
+                change_to = linkage[j][0]
+                change_only_me = linkage[j][1]
+                changes.append((change_only_me, change_to))
+                if debug_mode:
+                    print('changeTo: ', change_to, 'changeOnlyMe: ', change_only_me, 'valIdentifier: ', val_identifier,
+                          'compareTo: ', compare_to)
+                break
+    return changes
+
+
+def change_label(changes_in_data : list, result : list, debug_mode = False):
+    for k in range(len(changes_in_data)):
+        for element in result:
+            if element['label'] == changes_in_data[k][0]:
+                element['label'] = changes_in_data[k][1]
+                if debug_mode:
+                    print('change from: ', changes_in_data[k][0], '->', 'changed to: ', changes_in_data[k][1], 'point: ', element['coord'])
+
+
+def plotting(data_values : list, data_labels : list) -> None:
+    if np.shape(data_values)[1] > 2:
+        pca = PCA(n_components=2)
+        projected = pca.fit_transform(data_values)
+    else:
+        projected = data_values
+    plt.scatter(projected[:, 0], projected[:, 1], c=data_labels, edgecolor='none', alpha=0.8, cmap=plt.cm.get_cmap('nipy_spectral', 10))
+    plt.xlabel('X Coords')
+    plt.ylabel('Y Coords')
+    plt.colorbar()
+    plt.title('2D Projection of Dataset using PCA')
+    plt.show()
+
 
 # TODO: add way to load different datasets
 centers = [[1, 1], [-1, -1], [1, -1], [20, 20], [20, 21], [21, 20], [21, 21]]
@@ -21,69 +99,15 @@ X, labels_true = datasets.load_digits(
 #     return_X_y=True
 # )
 
-# run HDBSCAN on Data. Possible to change parameters here
-# hdb = HDBSCAN(store_centers='both')
-hdb = HDBSCAN(store_centers='both', min_cluster_size=10, min_samples=1)
-hdb.fit(X)
-# print iris for the test
-print(hdb.labels_)
+data, z_linkage = do_hdbscan(X)
+dp_data = copy.deepcopy(data)
+shortend_cutlist = get_biggest_density_change(get_cutlist(z_linkage), 0.55) #compramised_cutlist
+result = copy.deepcopy(dp_data)
 
-print("------------------")
-data = [dict(index=index, label=hdb.labels_[index], coord=value) for index, value in enumerate(X)]
+changes = compare_changes(shortend_cutlist, z_linkage, True)
+change_label(changes, result, True)
+sorted(shortend_cutlist, key=lambda tup: tup[1])
 
-data.sort(key=lambda x: x['label'])
-
-newData = copy.deepcopy(data)
-
-# Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
-z = hierarchy.linkage(hdb.centroids_, method='single')
-
-# linkage to IDFKIKMS
-# get height of parent and child cluster
-# TODO: figure out how to get points for cluster (z[i][0] and z[i][1])
-# print(z)
-cutlist = []
-for i in range(len(z) - 1):
-    height = z[i][2]
-    heightChild = z[i + 1][2]
-    heightDiff = height - heightChild
-
-    cutlist.append((heightDiff, height))
-
-
-def get_biggest_density_change(cutlist, quantile):
-    cutlist.sort(key=lambda tup: tup[0])
-    # cut from the point where quantile is reached
-    cutlist = cutlist[:int(len(cutlist) * quantile)]
-    return cutlist
-
-
-list2 = get_biggest_density_change(cutlist, 0.55)
-result = copy.deepcopy(newData)
-
-tmp = []
-
-for i in range(len(list2)):
-    valIdentifier = list2[i][1]
-
-    for j in range(len(z)):
-        compareTo = z[j][2]
-
-        if valIdentifier == compareTo:
-            changeTo = z[j][0]
-            changeOnlyMe = z[j][1]
-            tmp.append((changeOnlyMe, changeTo))
-            print('changeTo: ', changeTo, 'changeOnlyMe: ', changeOnlyMe, 'valIdentifier: ', valIdentifier,
-                  'compareTo: ', compareTo)
-            break
-
-for k in range(len(tmp)):
-    for element in result:
-        if element['label'] == tmp[k][0]:
-            element['label'] = tmp[k][1]
-            print('change from: ', tmp[k][0], '->', 'changed to: ', tmp[k][1], 'point: ', element['coord'])
-
-sorted(list2, key=lambda tup: tup[1])
 # hierarchyTreeCentroids = hierarchy.to_tree(z)
 
 # Create hierarchy from centroids and pass to tree for further use. Possible to change parameters here
@@ -101,14 +125,20 @@ sorted(list2, key=lambda tup: tup[1])
 
 # TODO: implement Alpha Shape Cut
 
-# Dendrogram for Christian DO NOT USE OTHERWISE
-# outPutlist = []
-# for element in result:
-#     plt.scatter(element['coord'][0], element['coord'][1], c=element['label'])
 
 for i in range(len(data)):
     print('data: ', data[i], 'compare_result: ', data[i]['label'] == result[i]['label'])
 
-# plt.scatter([newList['coord'][:] for newList in result], y=[newList['coord'][:] for newList in result], c=[newList['label'] for newList in result])
-# dendrogram = hierarchy.dendrogram(z)
-# plt.show()
+
+data_labels = [result[i]['label'] for i in range(len(result))]
+data_values = [result[i]['coord'] for i in range(len(result))]
+
+default_labels = [data[i]['label'] for i in range(len(data))]
+default_values = [data[i]['coord'] for i in range(len(data))]
+
+plotting(default_values, default_labels)
+plotting(data_values, data_labels)
+
+# Dendrogram for Christian DO NOT USE OTHERWISE
+dendrogram = hierarchy.dendrogram(z_linkage)
+plt.show()
