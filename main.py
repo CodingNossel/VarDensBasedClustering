@@ -133,7 +133,7 @@ def plotting(data_values : list, data_labels : list) -> None:
 -------------------------------------------------------------------
  From here on forward we load data sets and visualize our results.
 -------------------------------------------------------------------
-'''
+
 
 # TODO: add way to load different datasets
 centers = [[1, 1], [-1, -1], [1, -1], [20, 20], [20, 21], [21, 20], [21, 21]]
@@ -206,3 +206,4 @@ plotting(data_values, data_labels)
 data_labels = [result[i]['label'] for i in range(len(result))]
 data_values = [result[i]['coord'] for i in range(len(result))]
 plotting(data_values, data_labels)
+'''
