@@ -4,6 +4,13 @@ from scipy.spatial import Delaunay, ConvexHull
 from shapely.geometry import Polygon
 import alphashape
 
+'''
+Alpha Shape Cut - Pseudocode
+
+This Code has no use as we decided to not pursue the alpha shape cut algorithm but
+the edge quantil cut instead.
+Since we did but some effort in here and thought it could have potential, we left it as is.
+'''
 
 #input: linkage matrix z after HDBScan, data, quantile
 def alpha_shape_cut(z, data, quantile):
