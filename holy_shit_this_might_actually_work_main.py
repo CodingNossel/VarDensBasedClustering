@@ -146,6 +146,7 @@ def change_label(changes_in_data: dict, result: list, debug_mode: bool = False) 
             for point in result:
                 if point['label'] == int(cluster):
                     point['label'] = color_used
+        color_used += 1
 
 
 def plotting(data_values: list, data_labels: list) -> None:
